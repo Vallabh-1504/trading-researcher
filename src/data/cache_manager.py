@@ -1,11 +1,7 @@
 import aiosqlite
 import os
-import logging
 from datetime import datetime, timedelta
 from typing import Optional
-
-# Configure module-level logger
-logger = logging.getLogger(__name__)
 
 class SQLiteCacheManager:
     """
@@ -30,10 +26,10 @@ class SQLiteCacheManager:
                 """)
                 await db.commit()
 
-            logger.debug(f"Cache initialized at {self.db_path}")
+            print(f"Cache initialized at {self.db_path}")
 
         except Exception as e:
-            logger.error(f"Failed to initialize SQLite cache: {e}")
+            print(f"Failed to initialize SQLite cache: {e}")
             raise
 
     async def get(self, key: str, expiry_days: int = 1) -> Optional[str]:
@@ -48,17 +44,17 @@ class SQLiteCacheManager:
                     if row:
                         cached_time = datetime.fromisoformat(row[1])
                         if datetime.now() - cached_time < timedelta(days=expiry_days):
-                            logger.info(f"Cache HIT for key: {key}")
+                            print(f"Cache HIT for key: {key}")
                             return row[0]
                         else:
-                            logger.info(f"Cache EXPIRED for key: {key}")
+                            print(f"Cache EXPIRED for key: {key}")
                             return None
                         
-            logger.info(f"Cache MISS for key: {key}")
+            print(f"Cache MISS for key: {key}")
             return None
         
         except Exception as e:
-            logger.error(f"Error reading from cache for key {key}: {e}")
+            print(f"Error reading from cache for key {key}: {e}")
             return None
         
     async def set(self, key: str, data: str) -> None:
@@ -70,7 +66,7 @@ class SQLiteCacheManager:
                     (key, data, datetime.now().isoformat())
                 )
                 await db.commit()
-            logger.debug(f"Data successfully cached for key: {key}")
+            print(f"Data successfully cached for key: {key}")
         except Exception as e:
-            logger.error(f"Error writing to cache for key {key}: {e}")
+            print(f"Error writing to cache for key {key}: {e}")
             raise
