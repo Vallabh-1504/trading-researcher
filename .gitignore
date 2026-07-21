@@ -1,0 +1,30 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv
+
+# Dev requirements
+dev/
+*.txt
+*.md
+
+# Benchmark results
+Benchmark/
+*.json
+
+.env
+
+# sqlite cached data
+database/
+*.sqlite
+chroma_db/
+
+# unit tests (temporary)
+tests/
