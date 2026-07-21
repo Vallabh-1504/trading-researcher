@@ -124,7 +124,7 @@ class QualitativeThesis(BaseModel):
         )
     )
 
-    seniiment_score: float = Field(
+    sentiment_score: float = Field(
         description=(
             "Sentiment on the spread trade: -1.0 means highly negative/pairs trade looks bad, "
             "+1.0 means highly positive/strong convergence thesis. "
