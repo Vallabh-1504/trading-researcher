@@ -44,9 +44,11 @@ class TimeSeriesFetcher:
                 # We must specify orient and date formats depending on how pandas serialized it
                 return pd.read_json(io.StringIO(cached_json))
     
-            # 2. Cache Miss - Calculate dates
+            # 2. Cache Miss - Calculate dates.
+            # factor with 1.5 for calender days -> trading days
             end_date = datetime.now()
-            start_date = end_date - timedelta(days=lookback_days)
+            calendar_buffer = int(lookback_days * 1.5)
+            start_date = end_date - timedelta(days=calendar_buffer)
     
             try:
                 # 3. Execute blocking I/O in a separate thread
@@ -81,10 +83,23 @@ class TimeSeriesFetcher:
                 if len(prices_df) < 60:
                     raise ValueError(f"Insufficient data retrieved: Only {len(prices_df)} valid trading days found.")
     
-                # 6. Cache the valid data
+                # 6. Trim to exactly lookback_days rows (tail = most recent dates).
+                # converts the calendar-day over-fetch back to trading days
+                if len(prices_df) > lookback_days:
+                    prices_df = prices_df.iloc[-lookback_days:]
+                elif len(prices_df) < lookback_days:
+                    logger.warning(
+                        f"Requested {lookback_days} trading days but yfinance only returned "
+                        f"{len(prices_df)} days for {ticker_a}/{ticker_b}. "
+                    )
+
+                # 7. Cache the valid data
                 await self.cache.set(cache_key, prices_df.to_json())
-                logger.info("Time-Series fetched, validated, and cached successfully.")
-                
+                logger.info(
+                    f"Time-Series fetched, validated, and cached successfully. "
+                    f"Returning {len(prices_df)} trading days."
+                )
+
                 return prices_df
     
             except Exception as e:
